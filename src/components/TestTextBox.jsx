@@ -67,22 +67,30 @@ const TestTextBox = () => {
     try {
       if (/[a-zA-Z]/.test(input) && !bug1) {
         setBug1(true);
-        //setScore(score+(100/3));
-        throw new Error("L'espressione contiene lettere! Hai trovato un bug!");
+        setErrore(true);
+        setMessaggioErrore("L'espressione contiene lettere! Hai trovato un bug!");
       } else if (/[#]/.test(input) && !bug2) {
         setBug2(true);
-        //setScore(score+(100/3));
-        throw new Error("L'espressione contiene #! Hai trovato un bug!");
+        setErrore(true);
+        setMessaggioErrore("L'espressione contiene #! Hai trovato un bug!");
       } else if (input === "" && !bug3) {
         setBug3(true);
-        //setScore(score+(100/3));
-        throw new Error("L'espressione è vuota! Hai trovato un bug!");
+        setErrore(true);
+        setMessaggioErrore("L'espressione è vuota! Hai trovato un bug!");
+      } else if (/[a-zA-Z]/.test(input) && bug1) {
+        setErrore(true);
+        setMessaggioErrore("Hai già trovato il bug delle lettere!");
+      } else if (/#/.test(input) && bug2) {
+        setErrore(true);
+        setMessaggioErrore("Hai già trovato il bug dell'hashtag!");
+      } else if (input === "" && bug3) {
+        setErrore(true);
+        setMessaggioErrore("Hai già trovato il bug dell'input vuoto!");
       } else {
-        // Nessun errore
-        const risultato = eval(input); // Nota: eval può essere pericoloso, fai attenzione
-        setRisultato(risultato);
         setErrore(false);
         setMessaggioErrore('');
+        const risultato = eval(input);
+        setRisultato(risultato);
       }
     } catch (error) {
       setErrore(true);
