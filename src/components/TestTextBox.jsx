@@ -31,7 +31,7 @@ const TestTextBox = () => {
   
   async function addUser() {
 
-    const userRef = doc(db, "TextBox", user.uid); // Assicurati che colletionRef sia definito
+    const userRef = doc(db, "TextBox", user.uid); 
     
     try {
       const docSnap = await getDoc(userRef);

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { UserAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import CircularButton from "./CircularButton"; // Assicurati di importare CircularButton
-
+import { db } from '../firebase';
+import { doc, getDoc} from "firebase/firestore";
 const Account = () => {
   const { user, logout } = UserAuth();
   const navigate = useNavigate();
@@ -20,6 +21,71 @@ const Account = () => {
     }
   };
 
+  const handleSearchUserScoreTextBox = async () => {
+    try {
+      const docRef = doc(db, "TextBox", user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        setProgress1(docSnap.data()?.percentage); // Accedi al campo desiderato con la dot notation
+      } else {
+        console.log("Il documento non esiste!");
+        setProgress1(0);
+
+      }
+    } catch (e) {
+      console.log("Errore nel recupero del documento: " + e.message);
+    } 
+  };
+  const handleSearchUserScore2 = async () => {
+    try {
+      const docRef = doc(db, "TextBox", user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        setProgress1(docSnap.data()?.percentage); // Accedi al campo desiderato con la dot notation
+      } else {
+        console.log("Il documento non esiste!");
+        setProgress1(0);
+
+      }
+    } catch (e) {
+      console.log("Errore nel recupero del documento: " + e.message);
+    } 
+  };
+  const handleSearchUserScore3 = async () => {
+    try {
+      const docRef = doc(db, "TextBox", user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        setProgress1(docSnap.data()?.percentage); // Accedi al campo desiderato con la dot notation
+      } else {
+        console.log("Il documento non esiste!");
+        setProgress1(0);
+
+      }
+    } catch (e) {
+      console.log("Errore nel recupero del documento: " + e.message);
+    } 
+  };
+  const handleSearchUserScore4 = async () => {
+    try {
+      const docRef = doc(db, "TextBox", user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        setProgress1(docSnap.data()?.percentage); // Accedi al campo desiderato con la dot notation
+      } else {
+        console.log("Il documento non esiste!");
+        setProgress1(0);
+
+      }
+    } catch (e) {
+      console.log("Errore nel recupero del documento: " + e.message);
+    } 
+  };
+
   const handleButton1 = () => {
     try {
       navigate("/textbox");
@@ -31,10 +97,11 @@ const Account = () => {
   useEffect(() => {
     // Simulazione fetch da DB o file
     setTimeout(() => {
-      setProgress1(25);
-      setProgress2(50);
-      setProgress3(75);
-      setProgress4(80);
+      //setProgress1(25);
+      //setProgress2(50);
+      //setProgress3(75);
+      //setProgress4(80);
+      handleSearchUserScoreTextBox();
     }, 500);
   }, []);
 
@@ -100,7 +167,7 @@ const Account = () => {
         >
           <CircularButton
             percentage={progress1}
-            label="Pulsante 1"
+            label="Text Box Testing"
             onClick={handleButton1} // Passiamo la funzione handleButton1
           />
           <CircularButton percentage={progress2} label="Pulsante 2" />
