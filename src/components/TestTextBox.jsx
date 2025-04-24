@@ -129,60 +129,62 @@ const TestTextBox = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4 text-center">Mini Calcolatrice</h2>
-      <form onSubmit={calcola} className="flex flex-col gap-4">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Scrivi un'espressione (es: 3+5)"
-          className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          disabled={errore}
-        />
-        <button
-          type="submit"
-          className={`p-2 rounded text-white font-semibold ${errore ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
-          disabled={errore}
-        >
-          Calcola
-        </button>
-      </form>
-
-      {errore && (
-        <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded relative">
-          <strong>Errore:</strong> {messsaggioErrore}
+    <div className="bg-[#e0f2f7] min-h-screen flex items-center justify-center p-6">
+      <div className="bg-white rounded-lg shadow-md p-8 w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center text-purple-800">Mini Calcolatrice</h2>
+        <form onSubmit={calcola} className="flex flex-col gap-4">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Scrivi un'espressione (es: 3+5)"
+            className={`p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 ${errore ? 'bg-gray-200 cursor-not-allowed' : ''}`}
+            disabled={errore}
+          />
           <button
-            onClick={resettaErrore}
-            className="absolute top-1 right-2 text-red-700 font-bold hover:text-red-900"
+            type="submit"
+            className={`p-3 rounded text-white font-semibold ${errore ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 transition duration-200'}`}
+            disabled={errore}
           >
-            &times;
+            Calcola
           </button>
-        </div>
-      )}
+        </form>
 
-      {risultato !== null && !errore && (
-        <p className="mt-4 text-green-700 text-lg font-semibold">
-          Risultato: {risultato}
-        </p>
-      )}
+        {errore && (
+          <div className="mt-6 p-4 bg-purple-100 border bg-purple-400 bg-purple-00 rounded relative">
+            <strong>Errore:</strong> {messsaggioErrore}
+            <button
+              onClick={resettaErrore}
+              className="absolute top-2 right-2 text-purple-800 font-bold hover:text-red-900"
+            >
+              &times;
+            </button>
+          </div>
+        )}
 
-      {modalVisible && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h3 className="text-xl font-semibold text-center mb-4">Ottimo lavoro!</h3>
-            <p className="text-center mb-4">Hai trovato tutti i bug! Puoi passare al prossimo gruppo di test!</p>
-            <div className="text-center">
-              <button
-                onClick={closeModal}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                Ok, torna alla Home
-              </button>
+        {risultato !== null && !errore && (
+          <p className="mt-6 text-green-700 text-lg font-semibold text-center">
+            Risultato: {risultato}
+          </p>
+        )}
+
+        {modalVisible && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600 bg-opacity-50">
+            <div className="bg-white p-8 rounded-lg shadow-xl w-96">
+              <h3 className="text-xl font-semibold text-center mb-4 text-purple-700">Ottimo lavoro!</h3>
+              <p className="text-center mb-6">Hai trovato tutti i bug! Puoi passare al prossimo gruppo di test!</p>
+              <div className="text-center">
+                <button
+                  onClick={closeModal}
+                  className="bg-purple-500 text-white px-6 py-3 rounded-md hover:bg-purple-600 transition duration-200 font-semibold"
+                >
+                  Ok, torna alla Home
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

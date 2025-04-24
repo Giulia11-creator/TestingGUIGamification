@@ -20,25 +20,63 @@ const Signup = () => {
         }
 
     }
-    return(
-        <div className="max-w-[700px] mx-auto my-16 p-4">
-            <div>
-             <h2 className=" text-2xl font-bold">Iscriviti</h2>
-             <p className="py-2">Hai già un account? <Link to="/" className="underline">Accedi</Link></p>
-             </div>
-             <form onSubmit={handleSubmit}>
-                <div className="flex flex-col py-2">
-                    <label className="py-2 font-medium" >Email</label>
-                    <input onChange={(e)=>setEmail(e.target.value)} className="border p-3" type='email'/>
-                </div>
-                <div className="flex flex-col py-2">
-                    <label className="py-2 font-medium">Password</label>
-                    <input onChange={(e) => setPassword(e.target.value)} className="border p-3" type='password'/>
-                </div>
-                <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white font-bold p-4 rounded my-2 w-full ">Sign up</button>
-             </form>
-        </div>
-    );
+     return (
+            <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+              <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+                <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">Iscrizione</h2>
+              </div>
+        
+              <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+                <form className="space-y-6" onSubmit={handleSubmit}>
+                  <div>
+                    <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900">Email</label>
+                    <div className="mt-2">
+                      <input
+                        onChange={(e) => setEmail(e.target.value)}
+                        type="email"
+                        autoComplete="email"
+                        required
+                        style={{ border: '1px solid black' }}
+                        className="block w-full rounded-md bg-white **border border-gray-300** px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                      />
+                    </div>
+                  </div>
+        
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900">Password</label>
+                      <div className="text-sm">
+                        {/* Potresti aggiungere qui un link per "Hai dimenticato la password?" */}
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <input
+                        onChange={(e) => setPassword(e.target.value)}
+                        type="password"
+                        autoComplete="current-password"
+                        required
+                        style={{ border: '1px solid black' }}
+                         className="block w-full rounded-md bg-white **border border-gray-300** px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                      />
+                    </div>
+                  </div>
+        
+                  <div>
+                    <button
+                      type="submit"
+                      className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    >
+                      Sign up
+                    </button>
+                  </div>
+                </form>
+        
+                <p className="mt-10 text-center text-sm/6 text-gray-500">
+                  Hai già un account?<Link to="/signin" className="underline">  Accedi</Link>
+                </p>
+              </div>
+            </div>
+          );
 }
 
 export default Signup;
