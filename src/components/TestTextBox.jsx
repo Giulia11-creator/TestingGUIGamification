@@ -131,7 +131,10 @@ const TestTextBox = () => {
           <input
             type="text"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              setInput(e.target.value);
+              setRisultato(null);
+            }}
             placeholder="Scrivi un'espressione (es: 3+5)"
             className={`p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 ${errore ? 'bg-gray-200 cursor-not-allowed' : ''}`}
             disabled={errore}
