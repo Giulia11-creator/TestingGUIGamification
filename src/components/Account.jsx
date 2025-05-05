@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { UserAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import CircularButton from "./CircularButton";
 import { db } from '../firebase';
-import { doc, getDoc} from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { FaUserCircle } from "react-icons/fa";
 
 const Account = () => {
   const { user, logout } = UserAuth();
   const navigate = useNavigate();
-  const [progress1, setProgress1] = useState(0);
-  const [progress2, setProgress2] = useState(0);
-  const [progress3, setProgress3] = useState(0);
-  const [progress4, setProgress4] = useState(0);
+  const [progress1, setProgress1] = useState(0); // Inizializzato a 0
+  const [progress2, setProgress2] = useState(0); // Inizializzato a 0
+  const [progress3, setProgress3] = useState(0); // Inizializzato a 0
+  const [progress4, setProgress4] = useState(0); // Inizializzato a 0
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // Funzione per il logout
   const handleLogout = async () => {
     try {
       await logout();
@@ -24,62 +24,19 @@ const Account = () => {
     }
   };
 
+  // Toggle del menu utente
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  // Funzione per ottenere il punteggio dal DB
   const handleSearchUserScoreTextBox = async () => {
     try {
-      const docRef = doc(db, "TextBox", user.uid);
-      const docSnap = await getDoc(docRef);
+      const docRef = doc(db, "TextBox", user.uid); // Usando l'uid per identificare il documento
+      const docSnap = await getDoc(docRef); // Recupero del documento
 
       if (docSnap.exists()) {
-        setProgress1(docSnap.data()?.percentage);
-      } else {
-        console.log("Il documento non esiste!");
-        setProgress1(0);
-      }
-    } catch (e) {
-      console.log("Errore nel recupero del documento: " + e.message);
-    }
-  };
-  const handleSearchUserScore2 = async () => {
-    try {
-      const docRef = doc(db, "TextBox", user.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        setProgress1(docSnap.data()?.percentage);
-      } else {
-        console.log("Il documento non esiste!");
-        setProgress1(0);
-      }
-    } catch (e) {
-      console.log("Errore nel recupero del documento: " + e.message);
-    }
-  };
-  const handleSearchUserScore3 = async () => {
-    try {
-      const docRef = doc(db, "TextBox", user.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        setProgress1(docSnap.data()?.percentage);
-      } else {
-        console.log("Il documento non esiste!");
-        setProgress1(0);
-      }
-    } catch (e) {
-      console.log("Errore nel recupero del documento: " + e.message);
-    }
-  };
-  const handleSearchUserScore4 = async () => {
-    try {
-      const docRef = doc(db, "TextBox", user.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        setProgress1(docSnap.data()?.percentage);
+        setProgress1(docSnap.data()?.percentage); // Imposto il punteggio di progress1
       } else {
         console.log("Il documento non esiste!");
         setProgress1(0);
@@ -89,134 +46,168 @@ const Account = () => {
     }
   };
 
-  const handleButton1 = () => {
+  // Funzione per il recupero di progress2, progress3, progress4 (simile a progress1)
+  const handleSearchUserScores = async () => {
     try {
-      navigate("/textbox");
+      const docRef = doc(db, "TextBox", user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        setProgress2(docSnap.data()?.score2 || 0); // Impostiamo il punteggio per il test 2
+        setProgress3(docSnap.data()?.score3 || 0); // Impostiamo il punteggio per il test 3
+        setProgress4(docSnap.data()?.score4 || 0); // Impostiamo il punteggio per il test 4
+      } else {
+        console.log("Il documento non esiste!");
+        setProgress2(0);
+        setProgress3(0);
+        setProgress4(0);
+      }
     } catch (e) {
-      console.log(e.message);
+      console.log("Errore nel recupero del documento: " + e.message);
     }
   };
 
+  // Recupero dei dati dal DB al caricamento della pagina
   useEffect(() => {
-    // Simulazione fetch da DB o file
-    setTimeout(() => {
-      handleSearchUserScoreTextBox();
-    }, 500);
-  }, []);
+    handleSearchUserScoreTextBox();
+    handleSearchUserScores(); // Recuperiamo anche gli altri punteggi
+  }, []); // Questo useEffect si attiva solo una volta al caricamento del componente
 
   return (
-    <div
-      style={{
-        height: "auto",
-        width: "auto",
-        display: "flex",
-        flexDirection: "column",
-        background: "#f5f5f5",
-        overflow: "hidden",
-        overflowX: "hidden",
-        overflowY: "hidden",
-      }}
-    >
-      {/* NUOVA NAVBAR */}
-      <nav
-        style={{
-          
-          backgroundColor: "white",
-          padding: "10px 15px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexShrink: 0,
-          borderBottom: "2px solid #81c784",
-        }}
-      >
-       <span style={{ color: "#555", fontSize: "20px" }}>
-  <strong>Bentornato</strong>, <span style={{ color: "#4B0082" }}>{user && user.email.split('@')[0]}</span>! Pronto per una nuova sfida? 💪
-</span>
-        <div style={{ position: "relative" }}>
-        <div style={{  backgroundColor: "#e0bbed", borderRadius: "50%", padding: "5px" }}> {/* Contenitore per l'icona */}
+    <div className="bg-gray-100 min-h-screen flex flex-col overflow-hidden">
+      <nav className="bg-white p-4 flex justify-between items-center shadow-md border-b-2 border-green-400 flex-shrink-0">
+        <span className="text-xl text-gray-500">
+          <strong>Bentornato</strong>, <span className="text-purple-800">{user && user.email.split('@')[0]}</span>! Pronto per una nuova sfida? 💪
+        </span>
+        <div className="relative">
+          <div className="bg-purple-200 rounded-full p-1">
             <FaUserCircle
-              style={{ fontSize: "28px", cursor: "pointer", fill: "#4B0082" }}
+              className="text-purple-800 text-3xl cursor-pointer"
               onClick={toggleMenu}
             />
-        </div>
+          </div>
           {isMenuOpen && (
-            <div
-              style={{
-                position: "absolute",
-                top: "100%",
-                right: 0,
-                backgroundColor: "white",
-                borderRadius: "4px",
-                marginTop: "5px",
-                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-                zIndex: 10,
-              }}
-            >
+            <div className="absolute top-full right-0 bg-white rounded-md mt-2 shadow-lg z-10">
               <button
                 onClick={handleLogout}
-                style={{
-                  backgroundColor: "transparent",
-                  color: "#4B0082",
-                  border: "none",
-                  padding: "8px 12px",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  textAlign: "left",
-                  display: "block",
-                  transition: "background-color 0.2s ease-in-out, color 0.2s ease-in-out", // Aggiunta transizione
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.backgroundColor = "#E0BBE4"; // Tono di viola più chiaro
-                  e.target.style.color = "#33003D"; // Tono di viola più scuro per il testo
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.backgroundColor = "transparent";
-                  e.target.style.color = "#4B0082";
-                }}
+                className="block w-full text-left px-4 py-2 text-purple-800 hover:bg-purple-200 hover:text-purple-900 focus:outline-none"
               >
                 Logout
               </button>
-              {/* Altre opzioni del menu utente potrebbero andare qui */}
             </div>
           )}
         </div>
       </nav>
 
-      {/* CONTENUTO */}
-      <main
-        style={{
-      flexGrow: 1,
-      height: "auto",
-      width: "auto",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: "#e0f2f7",
-      padding: "60px",
-      overflowX: "hidden",
-      overflowY: "hidden",
-        }}
-      >
-        {/* Griglia dei pulsanti */}
-        <div
-          style={{
-            height:"auto",
-            display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
-            gridTemplateRows: "repeat(2, 1fr)",
-            gap: "40px",
-            
-          }}
-        >
-          <CircularButton
-            percentage={progress1}
-            label="Text Box Testing"
-            onClick={handleButton1}
-          />
-          <CircularButton percentage={progress2} label="Pulsante 2" />
-          <CircularButton percentage={progress3} label="Pulsante 3" />
-          <CircularButton percentage={progress4} label="Pulsante 4" />
+      {/* MAIN CONTENT */}
+      <main className="flex-grow flex justify-center items-center bg-blue-100 py-10 px-4 overflow-auto">
+        <div className="w-full max-w-3xl mx-auto">
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden w-full flex flex-col justify-between">
+            <div>
+              <div className="bg-purple-600 text-white py-4 px-6 flex items-center">
+                <h2 className="text-xl font-semibold">Testing</h2>
+              </div>
+              <div className="p-4 sm:p-6 md:p-8 space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">Benvenuto!</h3>
+                  <p className="text-sm text-gray-600">Completa i test per imparare qualcosa sul mondo del Testing.</p>
+                </div>
+
+                <div>
+                  <h4 className="text-md font-semibold text-gray-700 mb-4">Test</h4>
+                  <ul className="space-y-4">
+                    {/* Test 1 */}
+                    <li className="bg-gray-50 rounded-md py-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex items-center">
+                        <div className="bg-green-100 text-green-700 rounded-full w-8 h-8 flex items-center justify-center mr-3" />
+                        <span>Test TextBox</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 bg-gray-200 rounded-full h-2.5">
+                          <div
+                            className="bg-green-500 h-2.5 rounded-full transition-all duration-1000"
+                            style={{ width: `${progress1}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm text-gray-600">{progress1}%</span>
+                        <button
+                          className="bg-green-500 hover:bg-green-700 text-white text-xs font-bold py-2 px-3 rounded"
+                          onClick={() => navigate("/textbox")}
+                        >
+                          Inizia il Test
+                        </button>
+                      </div>
+                    </li>
+
+                    {/* Test 2 */}
+                    <li className="bg-gray-50 rounded-md py-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex items-center">
+                        <div className="bg-blue-100 text-blue-700 rounded-full w-8 h-8 flex items-center justify-center mr-3" />
+                        <span>Test 2</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 bg-gray-200 rounded-full h-2.5">
+                          <div
+                            className="bg-blue-500 h-2.5 rounded-full transition-all duration-1000"
+                            style={{ width: `${progress2}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm text-gray-600">{progress2}%</span>
+                        <button className="bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-2 px-3 rounded">
+                          Inizia il Test
+                        </button>
+                      </div>
+                    </li>
+
+                    {/* Test 3 */}
+                    <li className="bg-gray-50 rounded-md py-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex items-center">
+                        <div className="bg-red-100 text-red-700 rounded-full w-8 h-8 flex items-center justify-center mr-3" />
+                        <span>Test 3</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 bg-gray-200 rounded-full h-2.5">
+                          <div
+                            className="bg-red-500 h-2.5 rounded-full transition-all duration-1000"
+                            style={{ width: `${progress3}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm text-gray-600">{progress3}%</span>
+                        <button className="bg-red-500 hover:bg-red-700 text-white text-xs font-bold py-2 px-3 rounded">
+                          Inizia il Test
+                        </button>
+                      </div>
+                    </li>
+
+                    {/* Test 4 */}
+                    <li className="bg-gray-50 rounded-md py-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex items-center">
+                        <div className="bg-yellow-100 text-yellow-700 rounded-full w-8 h-8 flex items-center justify-center mr-3" />
+                        <span>Test 4</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 bg-gray-200 rounded-full h-2.5">
+                          <div
+                            className="bg-yellow-500 h-2.5 rounded-full transition-all duration-1000"
+                            style={{ width: `${progress4}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm text-gray-600">{progress4}%</span>
+                        <button className="bg-yellow-500 hover:bg-yellow-700 text-white text-xs font-bold py-2 px-3 rounded">
+                          Inizia il Test
+                        </button>
+                      </div>
+                    </li>
+
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div className="bg-gray-100 py-3 px-6 text-gray-500 text-sm flex justify-between">
+              <span>© 2024 Testing</span>
+              <span>2024 Testing</span>
+            </div>
+          </div>
         </div>
       </main>
     </div>
