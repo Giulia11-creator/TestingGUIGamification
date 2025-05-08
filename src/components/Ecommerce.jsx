@@ -15,27 +15,22 @@ const Ecommerce = () =>{
   let count = JSON.parse(sessionStorage.getItem("products") || "[]").length;
 
   const handleFirstClick = (titleP, priceP,photoP) => {
-    if (isSleeping.current) {
-     console.log("Caricamento dati in corso");
-      return;
-    }
 
     isSleeping.current = true;
     secondClickedDuringSleep.current = false;
     productToSave.current = { title: titleP, price: priceP, photo: photoP }; // Memorizza il prodotto
 
     setTimeout(() => {
-      isSleeping.current = false;
       if (!secondClickedDuringSleep.current) {
         sessionStorage.setItem("count", count + 1);
         saveProduct(productToSave.current.title, productToSave.current.price, productToSave.current.photo);
-        navigate("/cart");
+        isSleeping.current = false;
       } else {
         // Se il secondo click è avvenuto, la navigazione e l'incremento sono già stati gestiti
-        productToSave.current = null;
-        secondClickedDuringSleep.current = false; // Resetta il prodotto da salvare
+        secondClickedDuringSleep.current = false; 
+        isSleeping.current = false;// Resetta il prodotto da salvare
       }
-    }, 30000);
+    }, 20000);
   };
 
   const handleSecondClick = () => {
@@ -67,6 +62,11 @@ const Ecommerce = () =>{
 
     console.log("Prodotto salvato!");
   }
+ useEffect(() => {
+  let count = JSON.parse(sessionStorage.getItem("products") || "[]").length;
+   sessionStorage.setItem("count", count)
+  }, []); 
+
 
 
     return(
