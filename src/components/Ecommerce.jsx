@@ -3,36 +3,69 @@ import { useNavigate } from 'react-router-dom';
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from '../firebase';
 import { UserAuth } from "../context/AuthContext";
+import { useRef } from "react";
+
 
 const Ecommerce = () =>{
 
   const navigate = useNavigate();
+  const secondClickedDuringSleep = useRef(false);
+  const isSleeping = useRef(false);
+  const productToSave = useRef(null); // Ref per memorizzare il prodotto da salvare
+  let count = JSON.parse(sessionStorage.getItem("products") || "[]").length;
 
-  function saveProduct(titleP, priceP,photoP) {
- 
-    const title = document.getElementById(titleP).textContent;
-    const price = document.getElementById(priceP).textContent;
-    const photo = document.getElementById(photoP).src;
-  
-    // Crea un oggetto prodotto
+  const handleFirstClick = (titleP, priceP,photoP) => {
+    if (isSleeping.current) {
+     console.log("Caricamento dati in corso");
+      return;
+    }
+
+    isSleeping.current = true;
+    secondClickedDuringSleep.current = false;
+    productToSave.current = { title: titleP, price: priceP, photo: photoP }; // Memorizza il prodotto
+
+    setTimeout(() => {
+      isSleeping.current = false;
+      if (!secondClickedDuringSleep.current) {
+        sessionStorage.setItem("count", count + 1);
+        saveProduct(productToSave.current.title, productToSave.current.price, productToSave.current.photo);
+        navigate("/cart");
+      } else {
+        // Se il secondo click è avvenuto, la navigazione e l'incremento sono già stati gestiti
+        productToSave.current = null;
+        secondClickedDuringSleep.current = false; // Resetta il prodotto da salvare
+      }
+    }, 30000);
+  };
+
+  const handleSecondClick = () => {
+    if (isSleeping.current) {
+      secondClickedDuringSleep.current = true;
+      sessionStorage.setItem("count", count + 1);
+      navigate("/cart");
+      productToSave.current = null; // Annulla il salvataggio se si clicca "Carrello" durante lo sleep
+    }
+    else
+    {
+      navigate("/cart");
+    }
+  };
+
+  function saveProduct(title, price, photo) {
     const product = {
-      title: title,
-      price: price,
-      photo: photo
+      title: document.getElementById(title).textContent, // Ottieni i valori correnti dal DOM
+      price: document.getElementById(price).textContent,
+      photo: document.getElementById(photo).src
     };
-  
-    // Recupera l'elenco attuale dei prodotti dalla sessione (se c'è)
+
     let products = sessionStorage.getItem("products");
     products = products ? JSON.parse(products) : [];
-  
-    // Aggiunge il nuovo prodotto
+
     products.push(product);
-  
-    // Salva di nuovo in sessionStorage
+
     sessionStorage.setItem("products", JSON.stringify(products));
-  
+
     console.log("Prodotto salvato!");
-    navigate("/cart");
   }
 
 
@@ -72,6 +105,7 @@ const Ecommerce = () =>{
           </ol>
         </nav>
         <h2 class="mt-3 text-xl font-semibold text-black-900 sm:text-2xl">Electronics</h2>
+        <button onClick={handleSecondClick}>Carrello</button>
       </div>
     </div>
     <div class="mb-4 grid gap-4 sm:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-4">
@@ -119,7 +153,7 @@ const Ecommerce = () =>{
           <div class="mt-4 flex items-center justify-between gap-4">
             <p id="imacPrice" class="text-2xl font-extrabold leading-tight text-black-900">$1,699</p>
 
-            <button type="button" class="inline-flex items-center rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-black" onClick={() => saveProduct("imacTitle", "imacPrice", "imacPhoto")}
+            <button type="button" class="inline-flex items-center rounded-lg bg-primary-700 px-5 py-2.5 text-sm font-medium text-black" onClick={() =>  handleFirstClick("imacTitle", "imacPrice", "imacPhoto")}
             >
               <svg class="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
