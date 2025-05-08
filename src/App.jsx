@@ -2,7 +2,9 @@ import React from "react";
 import Signin from './components/Signin.jsx';
 import Signup from './components/Signup.jsx';
 import Account from './components/Account.jsx';
+import Ecommerce from './components/Ecommerce.jsx';
 import TestTextBox from "./components/TestTextBox.jsx";
+import Cart from "./components/Cart.jsx";
 import { Routes, Route } from 'react-router-dom';
 import { AuthContextProvider } from "./context/AuthContext.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
@@ -16,6 +18,8 @@ function App() {
       <AuthContextProvider>
       <Routes>
         <Route path='/' element={<Signin />} />
+        <Route path='/ecommerce' element={<Ecommerce />} />
+        <Route path='/cart' element={<Cart />} />
         <Route path='/signin' element={<Signin />} />
         <Route path='/signup' element={<Signup />} />
         <Route path='/account' element={<ProtectedRoute><Account/></ProtectedRoute>} />
