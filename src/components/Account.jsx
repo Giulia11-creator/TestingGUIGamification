@@ -143,7 +143,7 @@ const Account = () => {
                     <li className="bg-gray-50 rounded-md py-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div className="flex items-center">
                         <div className="bg-blue-100 text-blue-700 rounded-full w-8 h-8 flex items-center justify-center mr-3" />
-                        <span>Test 2</span>
+                        <span>Fleaky test</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="w-24 bg-gray-200 rounded-full h-2.5">
@@ -153,7 +153,10 @@ const Account = () => {
                           ></div>
                         </div>
                         <span className="text-sm text-gray-600">{progress2}%</span>
-                        <button className="bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-2 px-3 rounded">
+                        <button 
+                        className="bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-2 px-3 rounded"
+                        onClick={() => navigate("/ecommerce")}
+                        >
                           Inizia il Test
                         </button>
                       </div>

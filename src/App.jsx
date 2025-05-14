@@ -18,12 +18,14 @@ function App() {
       <AuthContextProvider>
       <Routes>
         <Route path='/' element={<Signin />} />
-        <Route path='/ecommerce' element={<Ecommerce />} />
-        <Route path='/cart' element={<Cart />} />
         <Route path='/signin' element={<Signin />} />
         <Route path='/signup' element={<Signup />} />
+        <Route path='/ecommerce' element={<Ecommerce />} />
+        <Route path='/cart' element={<Cart />} />
         <Route path='/account' element={<ProtectedRoute><Account/></ProtectedRoute>} />
         <Route path='/textbox' element={<ProtectedRoute><TestTextBox/></ProtectedRoute>} />
+        <Route path='/ecommerce' element={<ProtectedRoute><Ecommerce/></ProtectedRoute>} />
+        <Route path='/cart' element={<ProtectedRoute><Cart/></ProtectedRoute>} />
       </Routes>
       </AuthContextProvider>
      

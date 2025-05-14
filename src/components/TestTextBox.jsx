@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from '../firebase';
 import { UserAuth } from "../context/AuthContext";
+import { FaUserCircle } from 'react-icons/fa';
 
 const TestTextBox = () => {
     const [input, setInput] = useState('');
@@ -19,10 +20,8 @@ const TestTextBox = () => {
 
     async function addUser() {
         const userRef = doc(db, "TextBox", user.uid);
-
         try {
             const docSnap = await getDoc(userRef);
-
             if (docSnap.exists()) {
                 await setDoc(userRef, {
                     percentage: String(score),
@@ -45,7 +44,6 @@ const TestTextBox = () => {
 
     const calcola = (e) => {
         e.preventDefault();
-
         try {
             if (/[a-zA-Z]/.test(input) && !bug1Trovato) {
                 setBug1Trovato(true);
@@ -64,7 +62,7 @@ const TestTextBox = () => {
                 setMessaggioErrore("Hai già trovato il bug delle lettere!");
             } else if (/[#?&$£!]/.test(input) && bug2Trovato) {
                 setErrore(true);
-                setMessaggioErrore("Hai già trovato il bug  del simbolo non accettabile!");
+                setMessaggioErrore("Hai già trovato il bug del simbolo non accettabile!");
             } else if (input === "" && bug3Trovato) {
                 setErrore(true);
                 setMessaggioErrore("Hai già trovato il bug dell'input vuoto!");
@@ -83,21 +81,21 @@ const TestTextBox = () => {
 
     useEffect(() => {
         let currentScore = 0;
-        if (bug1Trovato) {
-            currentScore += 33;
-        }
-        if (bug2Trovato) {
-            currentScore += 33;
-        }
-        if (bug3Trovato) {
-            currentScore += 34;
-        }
-        setScore(currentScore);
+        if (bug1Trovato) currentScore += 33;
+        if (bug2Trovato) currentScore += 33;
+        if (bug3Trovato) currentScore += 34;
+        setScore(currentScore);  
     }, [bug1Trovato, bug2Trovato, bug3Trovato]);
 
+    // Salva score su Firestore ogni volta che cambia
+    useEffect(() => {
+        if (user) {
+            addUser(); // <-- ora viene chiamato solo quando lo score è stato aggiornato
+        }
+    }, [score, user]);
+    
     useEffect(() => {
         if (score === 100 && user) {
-            addUser();
             setModalVisible(true);
         }
     }, [score, user]);
@@ -114,90 +112,108 @@ const TestTextBox = () => {
     };
 
     return (
-        <div className="bg-blue-100 min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
-            <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="bg-purple-600 py-4 px-6"> {/* Intestazione viola */}
-                        <h2 className="mt-2 text-center text-xl font-semibold tracking-tight text-white">Mini Calcolatrice</h2>
+        <div className="bg-blue-100 min-h-screen">
+            {/* Navbar in alto */}
+            <nav className="bg-white p-4 flex justify-between items-center shadow-md border-b-2 border-green-400">
+                <span className="text-xl text-gray-500">
+                    <span className="text-purple-800">{user && user.email.split('@')[0]}</span>
+                </span>
+                <div className="relative">
+                    <div className="bg-purple-200 rounded-full p-1">
+                        <FaUserCircle
+                            className="text-purple-800 text-3xl cursor-pointer"
+                            onClick={() => navigate("/account")}
+                        />
+                    </div>
+                </div>
+            </nav>
+
+            {/* Contenuto principale centrato */}
+            <div className="flex items-center justify-center p-4 sm:p-6 lg:p-8">
+                <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-md">
+                    <div className="bg-purple-600 py-4 px-6 rounded-md">
+                        <h2 className="mt-2 text-center text-xl font-semibold text-white">Mini Calcolatrice</h2>
+                    </div>
+
+                    {/* Barra di completamento */}
+                    <div className="mt-4 mb-6">
+                        <div className="bg-gray-200 rounded-full h-2.5">
+                            <div
+                                className="bg-green-500 h-2.5 rounded-full"
+                                style={{ width: `${score}%` }}
+                            ></div>
+                        </div>
+                        <p className="text-sm text-gray-600 text-center mt-2">{score}% Completato</p>
+                    </div>
+
+                    <form onSubmit={calcola} className="space-y-4">
+                        <input
+                            type="text"
+                            value={input}
+                            onChange={(e) => {
+                                setInput(e.target.value);
+                                setRisultato(null);
+                            }}
+                            placeholder="Scrivi un'espressione (es: 3+5)"
+                            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500
+                                ${errore
+                                    ? 'bg-gray-50 text-gray-500 cursor-not-allowed border-red-500'
+                                    : 'border-gray-300'
+                                }`}
+                            disabled={errore}
+                        />
+                        <button
+                            type="submit"
+                            className={`w-full py-2 px-4 rounded-md text-white font-semibold transition duration-200
+                                ${errore
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-green-500 hover:bg-green-600'
+                                }`}
+                            disabled={errore}
+                        >
+                            Calcola
+                        </button>
+                    </form>
+
+                    {errore && (
+                        <div className="mt-6 p-4 bg-purple-100 border border-purple-400 rounded relative">
+                            <strong>Errore:</strong> {messaggioErrore}
+                            <button
+                                onClick={resettaErrore}
+                                className="absolute top-2 right-2 text-purple-800 font-bold hover:text-red-900"
+                            >
+                                &times;
+                            </button>
+                        </div>
+                    )}
+
+                    {risultato !== null && !errore && (
+                        <div className="mt-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+                            <p className="text-lg font-semibold">Risultato: {risultato}</p>
+                        </div>
+                    )}
+                </div>
             </div>
 
-                {/* Score Bar */}
-                <div className="mt-4 mb-6">
-                    <div className="bg-gray-200 rounded-full h-2.5">
-                        <div
-                            className="bg-green-500 h-2.5 rounded-full"
-                            style={{ width: `${score}%` }}
-                        ></div>
-                    </div>
-                    <p className="text-sm text-gray-600 text-center mt-2">{score}% Completato</p>
-                </div>
-
-                <form onSubmit={calcola} className="space-y-4">
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => {
-                            setInput(e.target.value);
-                            setRisultato(null);
-                        }}
-                        placeholder="Scrivi un'espressione (es: 3+5)"
-                        className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500
-                            ${errore
-                                ? 'bg-gray-50 text-gray-500 cursor-not-allowed border-red-500'
-                                : 'border-gray-300'
-                            }`}
-                        disabled={errore}
-                    />
-                    <button
-                        type="submit"
-                        className={`w-full py-2 px-4 rounded-md text-white font-semibold transition duration-200
-                            ${errore
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-green-500 hover:bg-green-600'
-                            }`}
-                        disabled={errore}
-                    >
-                        Calcola
-                    </button>
-                </form>
-
-                {errore && (
-          <div className="mt-6 p-4 bg-purple-100 border bg-purple-400 bg-purple-00 rounded relative">
-            <strong>Errore:</strong> {messaggioErrore}
-            <button
-              onClick={resettaErrore}
-              className="absolute top-2 right-2 text-purple-800 font-bold hover:text-red-900"
-            >
-              &times;
-            </button>
-          </div>
-        )}
-
-                {risultato !== null && !errore && (
-                    <div className="mt-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md flex items-center gap-2">
-                       
-                        <p className="text-lg font-semibold">Risultato: {risultato}</p>
-                    </div>
-                )}
-
-                {modalVisible && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600 bg-opacity-50">
-                        <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md">
-                            <h3 className="text-2xl font-semibold text-center mb-4 text-purple-600">
-                                Ottimo lavoro!
-                            </h3>
-                            <p className="text-center mb-6 text-gray-700">Hai trovato tutti i bug! Puoi passare al prossimo gruppo di test!</p>
-                            <div className="text-center">
-                                <button
-                                    onClick={closeModal}
-                                    className="bg-purple-500 text-white px-6 py-3 rounded-md hover:bg-purple-600 transition duration-200 font-semibold"
-                                >
-                                    Ok, torna alla Home
-                                </button>
-                            </div>
+            {/* Modal di completamento */}
+            {modalVisible && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600 bg-opacity-50">
+                    <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md">
+                        <h3 className="text-2xl font-semibold text-center mb-4 text-purple-600">
+                            Ottimo lavoro!
+                        </h3>
+                        <p className="text-center mb-6 text-gray-700">Hai trovato tutti i bug! Puoi passare al prossimo gruppo di test!</p>
+                        <div className="text-center">
+                            <button
+                                onClick={closeModal}
+                                className="bg-purple-500 text-white px-6 py-3 rounded-md hover:bg-purple-600 transition duration-200 font-semibold"
+                            >
+                                Ok, torna alla Home
+                            </button>
                         </div>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 };
