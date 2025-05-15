@@ -5,6 +5,7 @@ import Account from './components/Account.jsx';
 import Ecommerce from './components/Ecommerce.jsx';
 import TestTextBox from "./components/TestTextBox.jsx";
 import Cart from "./components/Cart.jsx";
+import Todo from "./components/TodoList.jsx"
 import { Routes, Route } from 'react-router-dom';
 import { AuthContextProvider } from "./context/AuthContext.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
@@ -21,6 +22,7 @@ function App() {
         <Route path='/signin' element={<Signin />} />
         <Route path='/signup' element={<Signup />} />
         <Route path='/ecommerce' element={<Ecommerce />} />
+        <Route path='/todo' element={<Todo />} />
         <Route path='/cart' element={<Cart />} />
         <Route path='/account' element={<ProtectedRoute><Account/></ProtectedRoute>} />
         <Route path='/textbox' element={<ProtectedRoute><TestTextBox/></ProtectedRoute>} />

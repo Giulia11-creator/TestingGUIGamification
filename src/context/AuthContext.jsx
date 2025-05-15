@@ -1,39 +1,4 @@
-/*import { createContext, useContext, useState } from "react";
-import { getAuth,signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged, 
-    createUserWithEmailAndPassword
-     } from 'firebase/auth';
-import auth from '../firebase';
-import db from '../firebase';
-import { setDoc, doc } from "firebase/firestore";
-const UserContext = createContext()
 
-export const AuthContextProvider = ({children}) => {
-    const createUser = (email, password) =>{
-      const user = auth.currentUser;
-      console.log(user);
-      if (user) {
-        setDoc(doc(db, "Users", user.uid), {
-          email: user.email,
-          psw: user.password,
-          id: user.uid
-        });
-      }
-
-        return createUserWithEmailAndPassword(auth, email, password);
-
-    }
-    return(
-        <UserContext.Provider value={createUser}>
-        {children}
-      </UserContext.Provider>
-    )
-}
-export const UserAuth = () =>{
-    return useContext(UserContext)
-}*/
-// src/context/AuthContext.js
 import { createContext, useContext, useState, useEffect } from "react";
 import {
   createUserWithEmailAndPassword,
