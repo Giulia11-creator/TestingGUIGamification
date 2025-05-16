@@ -22,9 +22,9 @@ function App() {
         <Route path='/signin' element={<Signin />} />
         <Route path='/signup' element={<Signup />} />
         <Route path='/ecommerce' element={<Ecommerce />} />
-        <Route path='/todo' element={<Todo />} />
         <Route path='/cart' element={<Cart />} />
         <Route path='/account' element={<ProtectedRoute><Account/></ProtectedRoute>} />
+         <Route path='/todo' element={<ProtectedRoute><Todo /></ProtectedRoute>} />
         <Route path='/textbox' element={<ProtectedRoute><TestTextBox/></ProtectedRoute>} />
         <Route path='/ecommerce' element={<ProtectedRoute><Ecommerce/></ProtectedRoute>} />
         <Route path='/cart' element={<ProtectedRoute><Cart/></ProtectedRoute>} />

@@ -11,7 +11,6 @@ const Account = () => {
   const [progress1, setProgress1] = useState(0); // Inizializzato a 0
   const [progress2, setProgress2] = useState(0); // Inizializzato a 0
   const [progress3, setProgress3] = useState(0); // Inizializzato a 0
-  const [progress4, setProgress4] = useState(0); // Inizializzato a 0
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Funzione per il logout
@@ -30,47 +29,33 @@ const Account = () => {
   };
 
   // Funzione per ottenere il punteggio dal DB
-  const handleSearchUserScoreTextBox = async () => {
+  const handleSearchUserScore = async (raccolta) => {
     try {
-      const docRef = doc(db, "TextBox", user.uid); // Usando l'uid per identificare il documento
+      
+      const docRef = doc(db, raccolta, user.uid); // Usando l'uid per identificare il documento
       const docSnap = await getDoc(docRef); // Recupero del documento
 
       if (docSnap.exists()) {
-        setProgress1(docSnap.data()?.percentage); // Imposto il punteggio di progress1
+      if(raccolta=="TextBox")
+        setProgress1(docSnap.data()?.percentage);
+      if(raccolta=="Todo")
+        setProgress3(docSnap.data()?.percentage);
+      if(raccolta=="Ecommerce")
+        setProgress2(docSnap.data()?.percentage); // Imposto il punteggio di progress1
       } else {
         console.log("Il documento non esiste!");
-        setProgress1(0);
       }
     } catch (e) {
       console.log("Errore nel recupero del documento: " + e.message);
     }
   };
 
-  // Funzione per il recupero di progress2, progress3, progress4 (simile a progress1)
-  const handleSearchUserScores = async () => {
-    try {
-      const docRef = doc(db, "TextBox", user.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        setProgress2(docSnap.data()?.score2 || 0); // Impostiamo il punteggio per il test 2
-        setProgress3(docSnap.data()?.score3 || 0); // Impostiamo il punteggio per il test 3
-        setProgress4(docSnap.data()?.score4 || 0); // Impostiamo il punteggio per il test 4
-      } else {
-        console.log("Il documento non esiste!");
-        setProgress2(0);
-        setProgress3(0);
-        setProgress4(0);
-      }
-    } catch (e) {
-      console.log("Errore nel recupero del documento: " + e.message);
-    }
-  };
 
   // Recupero dei dati dal DB al caricamento della pagina
   useEffect(() => {
-    handleSearchUserScoreTextBox();
-    handleSearchUserScores(); // Recuperiamo anche gli altri punteggi
+    handleSearchUserScore("TextBox"); 
+    handleSearchUserScore("Ecommerce"); 
+    handleSearchUserScore("Todo"); 
   }, []); // Questo useEffect si attiva solo una volta al caricamento del componente
 
   return (
@@ -176,32 +161,13 @@ const Account = () => {
                           ></div>
                         </div>
                         <span className="text-sm text-gray-600">{progress3}%</span>
-                        <button className="bg-red-500 hover:bg-red-700 text-white text-xs font-bold py-2 px-3 rounded">
+                        <button 
+                        className="bg-red-500 hover:bg-red-700 text-white text-xs font-bold py-2 px-3 rounded"
+                        onClick={() => navigate("/todo")}>
                           Inizia il Test
                         </button>
                       </div>
                     </li>
-
-                    {/* Test 4 */}
-                    <li className="bg-gray-50 rounded-md py-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <div className="flex items-center">
-                        <div className="bg-yellow-100 text-yellow-700 rounded-full w-8 h-8 flex items-center justify-center mr-3" />
-                        <span>Test 4</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="w-24 bg-gray-200 rounded-full h-2.5">
-                          <div
-                            className="bg-yellow-500 h-2.5 rounded-full transition-all duration-1000"
-                            style={{ width: `${progress4}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-sm text-gray-600">{progress4}%</span>
-                        <button className="bg-yellow-500 hover:bg-yellow-700 text-white text-xs font-bold py-2 px-3 rounded">
-                          Inizia il Test
-                        </button>
-                      </div>
-                    </li>
-
                   </ul>
                 </div>
               </div>
