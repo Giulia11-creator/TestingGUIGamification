@@ -116,7 +116,7 @@ const TestTextBox = () => {
             {/* Navbar in alto */}
             <nav className="bg-white p-4 flex justify-between items-center shadow-md border-b-2 border-green-400">
                 <span className="text-xl text-gray-500">
-                    <span className="text-purple-800">{user && user.email.split('@')[0]}</span>
+                    <span className="text-purple-800">Ciao, {user && user.email.split('@')[0]}</span>
                 </span>
                 <div className="relative">
                     <div className="bg-purple-200 rounded-full p-1">
@@ -136,14 +136,8 @@ const TestTextBox = () => {
                     </div>
 
                     {/* Barra di completamento */}
-                    <div className="mt-4 mb-6">
-                        <div className="bg-gray-200 rounded-full h-2.5">
-                            <div
-                                className="bg-green-500 h-2.5 rounded-full"
-                                style={{ width: `${score}%` }}
-                            ></div>
-                        </div>
-                        <p className="text-sm text-gray-600 text-center mt-2">{score}% Completato</p>
+                    <div className="mt-4 mb-6 mx-auto text-center">
+                        {'🪲'.repeat(Math.floor(score / 30))}
                     </div>
 
                     <form onSubmit={calcola} className="space-y-4">
