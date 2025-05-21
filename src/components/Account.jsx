@@ -128,7 +128,7 @@ const Account = () => {
                     <li className="bg-gray-50 rounded-md py-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div className="flex items-center">
                         <div className="bg-blue-100 text-blue-700 rounded-full w-8 h-8 flex items-center justify-center mr-3" />
-                        <span>Fleaky test</span>
+                        <span>Test e-commerce</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="w-24 bg-gray-200 rounded-full h-2.5">
@@ -151,7 +151,7 @@ const Account = () => {
                     <li className="bg-gray-50 rounded-md py-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div className="flex items-center">
                         <div className="bg-red-100 text-red-700 rounded-full w-8 h-8 flex items-center justify-center mr-3" />
-                        <span>Test 3</span>
+                        <span>Test task</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="w-24 bg-gray-200 rounded-full h-2.5">
