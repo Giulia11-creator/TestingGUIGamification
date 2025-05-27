@@ -131,7 +131,7 @@ const Ecommerce = () => {
     }
 
     if (length === 0 && bugEmptyList) {
-      setmessaggioErrore("Hai trovato questo bug! L'applicazione lascia eliminare un prodotto prima che venga inserito!");
+      setmessaggioErrore("Hai già trovato questo bug! L'applicazione lascia eliminare un prodotto prima che venga inserito!");
       setpopVisible(true);
       return;
     }
@@ -152,7 +152,7 @@ const Ecommerce = () => {
     }
 
     if (!trovato && bugNoObject) {
-      setmessaggioErrore("Hai trovato questo bug! L'applicazione lascia eliminare un prodotto prima che venga inserito!");
+      setmessaggioErrore("Hai già trovato questo bug! L'applicazione lascia eliminare un prodotto prima che venga inserito!");
       setpopVisible(true);
       return;
     }
@@ -361,7 +361,7 @@ const Ecommerce = () => {
                     </svg>
                     Acquista
                   </button>
-                 <button
+                  <button
                     type="button"
                     className="inline-flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner"
                     onClick={() => RemoveItem(
@@ -413,7 +413,7 @@ const Ecommerce = () => {
                     </svg>
                     Acquista
                   </button>
-                 <button
+                  <button
                     type="button"
                     className="inline-flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner"
                     onClick={() => RemoveItem(
@@ -603,14 +603,16 @@ const Ecommerce = () => {
         )}
 
         {popVisible && (
-          <div className="mt-6 p-4 bg-purple-100 border border-purple-400 rounded relative">
-            <strong>Errore:</strong> {messaggioErrore}
-            <button
-              onClick={resettaErrore}
-              className="absolute top-2 right-2 text-purple-800 font-bold hover:text-red-900"
-            >
-              &times;
-            </button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600 bg-opacity-50"> {/* Added centering styles */}
+            <div className="p-4 bg-purple-100 border border-purple-400 rounded relative w-full max-w-md"> {/* Adjusted width */}
+              <strong>Errore:</strong> {messaggioErrore}
+              <button
+                onClick={resettaErrore}
+                className="absolute top-2 right-2 text-purple-800 font-bold hover:text-red-900"
+              >
+                &times;
+              </button>
+            </div>
           </div>
         )}
       </div>
