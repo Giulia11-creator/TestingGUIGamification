@@ -13,8 +13,15 @@ const Cart = () => {
   const navigate = useNavigate();
   let total = 0;
   const { user } = UserAuth();
-  const [score, setscore] = useState(0);
-  const [bugFlaky, setBugFlaky] = useState(false);
+  const [bugFlaky, setbugFlaky] = useState(() => {
+    const saved = sessionStorage.getItem('bugFlaky');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [score, setscore] = useState(() => {
+    const saved = sessionStorage.getItem('score');
+    return saved ? JSON.parse(saved) : 0;
+  });
+
 
   async function addUser() {
     const userRef = doc(db, "Ecommerce", user.uid);
@@ -50,18 +57,28 @@ const Cart = () => {
   }, [score, user]);
 
   useEffect(() => {
-    let currentscore = 0
-    if (bugFlaky) currentscore += 100;
-    setscore(currentscore);
-  }, [bugFlaky, score]);
+    // Controllo e setto score la prima volta per bugbugFlaky
+    if (bugFlaky) {
+      const scoreSetForbugFlaky = sessionStorage.getItem('scoreSetForbugFlaky');
+      if (!scoreSetForbugFlaky) {
+        const newScore = score + 34; // il valore che vuoi settare
+        setscore(newScore);
+        sessionStorage.setItem('score', JSON.stringify(newScore));
+        sessionStorage.setItem('scoreSetForbugFlaky', 'true');
+      }
+    }
+  }, [bugFlaky]);
+
 
   useEffect(() => {
     if (count > length)
-      setBugFlaky(true);
-  }, [bugFlaky]);
+      setbugFlaky(true);
+    sessionStorage.setItem('bugFlaky', 'true');
+  }
+    , [bugFlaky]);
 
   const ClosePopUp = () => {
-    navigate("/account");
+    navigate("/ecommerce");
   };
 
   return (
@@ -81,14 +98,14 @@ const Cart = () => {
                         Ottimo lavoro!
                       </h3>
                       <p className="text-center mb-6 text-gray-700">
-                        Hai trovato il bug! Se si preme troppo rapidamente sul carrello il prodotto appena inserito non compare! Puoi passare al prossimo gruppo di test!
+                        Hai trovato un bug! Se si preme troppo rapidamente sul carrello il prodotto appena inserito non compare!
                       </p>
                       <div className="text-center">
                         <button
                           onClick={ClosePopUp}
                           className="bg-purple-500 text-white px-6 py-3 rounded-md hover:bg-purple-600 transition duration-200 font-semibold"
                         >
-                          Ok, torna alla Home
+                          Ok, all'ecommerce
                         </button>
                       </div>
                     </div>
@@ -140,8 +157,8 @@ const Cart = () => {
                       }}
                       disabled={bugFlaky}
                       className={`inline-flex items-center gap-2 text-sm font-medium underline ${bugFlaky
-                          ? "text-gray-400 cursor-not-allowed"
-                          : "text-primary-700 hover:no-underline dark:text-primary-500"
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-primary-700 hover:no-underline dark:text-primary-500"
                         }`}
                     >
                       Continua lo shopping

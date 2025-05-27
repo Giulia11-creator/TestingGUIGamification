@@ -11,9 +11,94 @@ const Ecommerce = () => {
   const secondClickedDuringSleep = useRef(false);
   const isSleeping = useRef(false);
   const productToSave = useRef(null); // Ref per memorizzare il prodotto da salvare
-  let count = JSON.parse(sessionStorage.getItem("products") || "[]").length;
+  let length = JSON.parse(sessionStorage.getItem("products") || "[]").length;
+  const [bugEmptyList, setbugEmptyList] = useState(() => {
+    const saved = sessionStorage.getItem('bugEmptyList');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [messaggioErrore, setmessaggioErrore] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [popVisible, setpopVisible] = useState(false);
+  const [bugNoObject, setbugNoObject] = useState(() => {
+    const saved = sessionStorage.getItem('bugNoObject');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [score, setscore] = useState(() => {
+    const saved = sessionStorage.getItem('score');
+    return saved ? JSON.parse(saved) : 0;
+  });
   const { user } = UserAuth();
-  
+  // Questo effetto scatta ogni volta che cambiano i bug
+  useEffect(() => {
+    // Controllo e setto score la prima volta per bugEmptyList
+    if (bugEmptyList) {
+      const scoreSetForBugEmptyList = sessionStorage.getItem('scoreSetForBugEmptyList');
+      if (!scoreSetForBugEmptyList) {
+        const newScore = score + 33; // il valore che vuoi settare
+        setscore(newScore);
+        sessionStorage.setItem('score', JSON.stringify(newScore));
+        sessionStorage.setItem('scoreSetForBugEmptyList', 'true');
+      }
+    }
+  }, [bugEmptyList]);
+
+  useEffect(() => {
+    // Controllo e setto score la prima volta per bugNoObject
+    if (bugNoObject) {
+      const scoreSetForBugNoObject = sessionStorage.getItem('scoreSetForBugNoObject');
+      if (!scoreSetForBugNoObject) {
+        const newScore = score + 33; // il valore che vuoi settare
+        setscore(newScore);
+        sessionStorage.setItem('score', JSON.stringify(newScore));
+        sessionStorage.setItem('scoreSetForBugNoObject', 'true');
+      }
+    }
+  }, [bugNoObject]);
+
+  // Quando lo score cambia, salvo sempre in sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem('score', JSON.stringify(score));
+  }, [score]);
+
+  useEffect(() => {
+    if (score == 100) {
+      setModalVisible(true);
+    }
+  }, [score]);
+
+  async function addUser() {
+    const userRef = doc(db, "Ecommerce", user.uid);
+    try {
+      const docSnap = await getDoc(userRef);
+      if (docSnap.exists()) {
+        await setDoc(
+          userRef,
+          {
+            percentage: String(score),
+            lastUpdate: serverTimestamp(),
+          },
+          { merge: true }
+        );
+        console.log("Utente aggiornato con nuovo score e timestamp.");
+      } else {
+        await setDoc(userRef, {
+          id: user.uid,
+          percentage: String(score),
+          createdAt: serverTimestamp(),
+          lastUpdate: serverTimestamp(),
+        });
+        console.log("Nuovo utente creato.");
+      }
+    } catch (error) {
+      console.error("Errore durante il salvataggio:", error);
+    }
+  }
+  useEffect(() => {
+    if (user) {
+      addUser();
+    }
+  }, [score, user]);
+
   const handleFirstClick = (titleP, priceP, photoP) => {
 
     isSleeping.current = true;
@@ -22,7 +107,7 @@ const Ecommerce = () => {
 
     setTimeout(() => {
       if (!secondClickedDuringSleep.current) {
-        sessionStorage.setItem("count", count + 1);
+        sessionStorage.setItem("count", length + 1);
         saveProduct(productToSave.current.title, productToSave.current.price, productToSave.current.photo);
         isSleeping.current = false;
       } else {
@@ -30,19 +115,80 @@ const Ecommerce = () => {
         secondClickedDuringSleep.current = false;
         isSleeping.current = false;
       }
-    }, 8000);
+    }, 4000);
   };
+
+  const RemoveItem = (title, price, photo) => {
+    const rawProducts = sessionStorage.getItem("products");
+    const listProduct = rawProducts ? JSON.parse(rawProducts) : [];
+
+    if (length === 0 && !bugEmptyList) {
+      setmessaggioErrore("Hai trovato un bug! L'applicazione lascia rimuovere un prodotto anche se il carrello è vuoto!");
+      setpopVisible(true);
+      setbugEmptyList(true);
+      sessionStorage.setItem('bugEmptyList', JSON.stringify(true));
+      return;
+    }
+
+    if (length === 0 && bugEmptyList) {
+      setmessaggioErrore("Hai trovato questo bug! L'applicazione lascia eliminare un prodotto prima che venga inserito!");
+      setpopVisible(true);
+      return;
+    }
+
+    const trovato = listProduct.some(
+      (product) =>
+        product.title === title &&
+        product.price === price &&
+        product.photo === photo
+    );
+
+    if (!trovato && !bugNoObject) {
+      setmessaggioErrore("Hai trovato un bug! L'applicazione lascia eliminare un prodotto prima che venga inserito!");
+      setpopVisible(true);
+      setbugNoObject(true);
+      sessionStorage.setItem('bugNoObject', JSON.stringify(true));
+      return;
+    }
+
+    if (!trovato && bugNoObject) {
+      setmessaggioErrore("Hai trovato questo bug! L'applicazione lascia eliminare un prodotto prima che venga inserito!");
+      setpopVisible(true);
+      return;
+    }
+
+    // Se il prodotto esiste, rimuovi solo la prima istanza che combacia esattamente
+    const listProduct2 = [...listProduct];
+    const index = listProduct2.findIndex(
+      (product) =>
+        product.title === title &&
+        product.price === price &&
+        product.photo === photo
+    );
+
+    if (index !== -1) {
+      listProduct2.splice(index, 1);
+      sessionStorage.setItem("products", JSON.stringify(listProduct2));
+      sessionStorage.setItem("count", listProduct2.length);
+    }
+  };
+
 
   const handleSecondClick = () => {
     if (isSleeping.current) {
       secondClickedDuringSleep.current = true;
-      sessionStorage.setItem("count", count + 1);
+      sessionStorage.setItem("count", length + 1);
       navigate("/cart");
       productToSave.current = null; // Annulla il salvataggio se si clicca "Carrello" durante lo sleep
     }
     else {
       navigate("/cart");
     }
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    navigate("/account");
   };
 
   function saveProduct(title, price, photo) {
@@ -62,10 +208,15 @@ const Ecommerce = () => {
     console.log("Prodotto salvato!");
   }
   useEffect(() => {
-    let count = JSON.parse(sessionStorage.getItem("products") || "[]").length;
-    sessionStorage.setItem("count", count)
+    let length = JSON.parse(sessionStorage.getItem("products") || "[]").length;
+    sessionStorage.setItem("count", length)
   }, []);
-  
+
+  const resettaErrore = () => {
+    setpopVisible(false);
+    setmessaggioErrore('');
+  };
+
   return (
     <section className="bg-blue-100 py-8 md:py-12 min-h-screen"> {/* Added min-h-screen for better layout */}
 
@@ -91,6 +242,7 @@ const Ecommerce = () => {
           <div className="flex justify-between items-center p-4 bg-white shadow w-full">
             <h1 className="text-2xl font-bold text-gray-800">Negozio</h1> {/* Adjusted text color */}
             <div className="flex items-center space-x-4"> {/* Grouped emoji and button */}
+              {'🪲'.repeat(Math.floor(score / 30))}
               <button
                 onClick={handleSecondClick}
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
@@ -150,12 +302,25 @@ const Ecommerce = () => {
 
               <div className="mt-4 flex items-center justify-between gap-4">
                 <p id="imacPrice" className="text-2xl font-extrabold leading-tight text-gray-900">$1699,00</p>
-                <button type="button" className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner" onClick={() => handleFirstClick("imacTitle", "imacPrice", "imacPhoto")}>
-                  <svg className="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
-                  </svg>
-                  Acquista
-                </button>
+                <div className="flex flex-col space-y-4">
+                  <button type="button" className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner" onClick={() => handleFirstClick("imacTitle", "imacPrice", "imacPhoto")}>
+                    <svg className="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
+                    </svg>
+                    Acquista
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner"
+                    onClick={() => RemoveItem(
+                      document.getElementById("imacTitle").textContent, // Ottiene il testo del titolo
+                      document.getElementById("imacPrice").textContent, // Ottiene il testo del prezzo
+                      document.getElementById("imacPhoto").src          // Ottiene la sorgente dell'immagine
+                    )}
+                  >
+                    X Rimuovi
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -188,12 +353,26 @@ const Ecommerce = () => {
               </div>
               <div className="mt-4 flex items-center justify-between gap-4">
                 <p id='matebookPrice' className="text-2xl font-extrabold leading-tight text-gray-900">$1400,00</p>
-                <button type="button" className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner" onClick={() => handleFirstClick("matebookTitle", "matebookPrice", "matebookPhoto")}>
-                  <svg className="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
-                  </svg>
-                  Acquista
-                </button>
+                <div className="flex flex-col space-y-4">
+                  <button type="button" className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner" onClick={() => handleFirstClick("matebookTitle", "matebookPrice", "matebookPhoto")}>
+
+                    <svg className="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
+                    </svg>
+                    Acquista
+                  </button>
+                 <button
+                    type="button"
+                    className="inline-flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner"
+                    onClick={() => RemoveItem(
+                      document.getElementById("matebookTitle").textContent, // Ottiene il testo del titolo
+                      document.getElementById("matebookPrice").textContent, // Ottiene il testo del prezzo
+                      document.getElementById("matebookPhoto").src          // Ottiene la sorgente dell'immagine
+                    )}
+                  >
+                    X Rimuovi
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -226,12 +405,26 @@ const Ecommerce = () => {
               </div>
               <div className="mt-4 flex items-center justify-between gap-4">
                 <p id="watchPrice" className="text-2xl font-extrabold leading-tight text-gray-900">$500,00</p>
-                <button type="button" className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner" onClick={() => handleFirstClick("watchTitle", "watchPrice", "watchPhoto")}>
-                  <svg className="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
-                  </svg>
-                  Acquista
-                </button>
+                <div className="flex flex-col space-y-4">
+                  <button type="button" className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner" onClick={() => handleFirstClick("watchTitle", "watchPrice", "watchPhoto")}>
+
+                    <svg className="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
+                    </svg>
+                    Acquista
+                  </button>
+                 <button
+                    type="button"
+                    className="inline-flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner"
+                    onClick={() => RemoveItem(
+                      document.getElementById("watchTitle").textContent, // Ottiene il testo del titolo
+                      document.getElementById("watchPrice").textContent, // Ottiene il testo del prezzo
+                      document.getElementById("watchPhoto").src          // Ottiene la sorgente dell'immagine
+                    )}
+                  >
+                    X Rimuovi
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -264,12 +457,25 @@ const Ecommerce = () => {
               </div>
               <div className="mt-4 flex items-center justify-between gap-4">
                 <p id="ipadPrice" className="text-2xl font-extrabold leading-tight text-gray-900">$1200,00</p>
-                <button type="button" className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner" onClick={() => handleFirstClick("ipadTitle", "ipadPrice", "ipadPhoto")}>
-                  <svg className="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
-                  </svg>
-                  Acquista
-                </button>
+                <div className="flex flex-col space-y-4">
+                  <button type="button" className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner" onClick={() => handleFirstClick("ipadTitle", "ipadPrice", "ipadPhoto")}>
+                    <svg className="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
+                    </svg>
+                    Acquista
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner"
+                    onClick={() => RemoveItem(
+                      document.getElementById("ipadTitle").textContent, // Ottiene il testo del titolo
+                      document.getElementById("ipadPrice").textContent, // Ottiene il testo del prezzo
+                      document.getElementById("ipadPhoto").src          // Ottiene la sorgente dell'immagine
+                    )}
+                  >
+                    X Rimuovi
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -302,12 +508,25 @@ const Ecommerce = () => {
               </div>
               <div className="mt-4 flex items-center justify-between gap-4">
                 <p id="iphonePrice" className="text-2xl font-extrabold leading-tight text-gray-900">$850,00</p>
-                <button type="button" className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner" onClick={() => handleFirstClick("iphoneTitle", "iphonePrice", "iphonePhoto")}>
-                  <svg className="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
-                  </svg>
-                  Acquista
-                </button>
+                <div className="flex flex-col space-y-4">
+                  <button type="button" className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner" onClick={() => handleFirstClick("iphoneTitle", "iphonePrice", "iphonePhoto")}>
+                    <svg className="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
+                    </svg>
+                    Acquista
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner"
+                    onClick={() => RemoveItem(
+                      document.getElementById("iphoneTitle").textContent, // Ottiene il testo del titolo
+                      document.getElementById("iphonePrice").textContent, // Ottiene il testo del prezzo
+                      document.getElementById("iphonePhoto").src          // Ottiene la sorgente dell'immagine
+                    )}
+                  >
+                    X Rimuovi
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -340,16 +559,60 @@ const Ecommerce = () => {
               </div>
               <div className="mt-4 flex items-center justify-between gap-4">
                 <p id="ps5Price" className="text-2xl font-extrabold leading-tight text-gray-900">$412,00</p>
-                <button type="button" className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner" onClick={() => handleFirstClick("ps5Title", "ps5Price", "ps5Photo")}>
-                  <svg className="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
-                  </svg>
-                  Acquista
-                </button>
+                <div className="flex flex-col space-y-4">
+                  <button type="button" className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner" onClick={() => handleFirstClick("ps5Title", "ps5Price", "ps5Photo")}>
+                    <svg className="-ms-2 me-2 h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4h1.5L8 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm.75-3H7.5M11 7H6.312M17 4v6m-3-3h6" />
+                    </svg>
+                    Acquista
+                  </button>
+                  { }
+                  <button
+                    type="button"
+                    className="inline-flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none active:bg-blue-800 active:shadow-inner"
+                    onClick={() => RemoveItem(
+                      document.getElementById("ps5Title").textContent, // Ottiene il testo del titolo
+                      document.getElementById("ps5Price").textContent, // Ottiene il testo del prezzo
+                      document.getElementById("ps5Photo").src          // Ottiene la sorgente dell'immagine
+                    )}
+                  >
+                    X Rimuovi
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
+        {modalVisible && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600 bg-opacity-50">
+            <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md">
+              <h3 className="text-2xl font-semibold text-center mb-4 text-purple-600">
+                Ottimo lavoro!
+              </h3>
+              <p className="text-center mb-6 text-gray-700">Hai trovato tutti i bug! Puoi passare al prossimo gruppo di test!</p>
+              <div className="text-center">
+                <button
+                  onClick={closeModal}
+                  className="bg-purple-500 text-white px-6 py-3 rounded-md hover:bg-purple-600 transition duration-200 font-semibold"
+                >
+                  Ok, torna alla Home
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {popVisible && (
+          <div className="mt-6 p-4 bg-purple-100 border border-purple-400 rounded relative">
+            <strong>Errore:</strong> {messaggioErrore}
+            <button
+              onClick={resettaErrore}
+              className="absolute top-2 right-2 text-purple-800 font-bold hover:text-red-900"
+            >
+              &times;
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
