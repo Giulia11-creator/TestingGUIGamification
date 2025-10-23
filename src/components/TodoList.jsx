@@ -65,7 +65,7 @@ function TodoList() {
     dataTodo.setHours(0, 0, 0, 0);
 
     if (dataTodo < oggi && !bugData) {
-      setMessaggioErrore("🎉 Congratulazioni! Hai scoperto un bug logico. Ogni volta che aggiungi tre task, il terzo viene salvato con una data sbagliata. n pratica, l’applicazione sovrascrive la data in modo errato invece di usare quella scelta dall’utente. Questo è un esempio tipico di bug logico (off-by-one), in cui la logica del programma produce un comportamento non coerente con l’intenzione.");
+      setMessaggioErrore("🎉 Congratulazioni! Hai scoperto un bug logico. Ogni volta che aggiungi tre task, il terzo viene salvato con una data sbagliata. In pratica, l’applicazione sovrascrive la data in modo errato invece di usare quella scelta dall’utente. Questo è un esempio tipico di bug logico (off-by-one), in cui la logica del programma produce un comportamento non coerente con l’intenzione.");
       setpopUpErrore(true);
       setbugData(true);
     } else {

@@ -51,7 +51,6 @@ const Ecommerce = () => {
         sessionStorage.setItem('bugNoObject', JSON.stringify(true));
         setmessaggioErrore("🧹 Congratulazioni! Hai trovato un bug logico di stato. L’applicazione permette di rimuovere un prodotto dal carrello anche se non è mai stato aggiunto. Questo accade perché il programma non verifica la presenza dell’oggetto nella lista prima di tentare la rimozione. Si tratta di un bug logico, legato alla gestione errata dello stato: il sistema non controlla la coerenza tra l’azione (rimuovere) e la situazione attuale (lista vuota o prodotto inesistente). In un contesto reale, questo potrebbe portare a errori di sincronizzazione dei dati o a comportamenti incoerenti nell’interfaccia.");
         setpopVisible(true);
-        setbugNoObject(true);
       }
     }
   }, [bugNoObject]);
@@ -66,9 +65,9 @@ const Ecommerce = () => {
         sessionStorage.setItem('score', JSON.stringify(newScore));
         sessionStorage.setItem('scoreSetForbugWrongProduct', 'true');
         sessionStorage.setItem('bugWrongProduct', JSON.stringify(true));
-        setmessaggioErrore("Hai trovato un bug! L'applicazione lascia eliminare un prodotto prima che venga inserito!");
+        setmessaggioErrore("🛍️ Ben fatto! Hai individuato un bug di coerenza dei dati (data inconsistency). Durante la navigazione, uno dei prodotti può cambiare nome da solo, anche senza alcuna interazione. Questo tipo di bug si verifica quando i dati condivisi tra più componenti o funzioni vengono modificati in modo non controllato, oppure quando un riferimento a oggetti in memoria viene riutilizzato o sovrascritto per errore. È un bug logico di gestione dello stato, perché il codice non garantisce l’integrità dei dati mostrati. In un’app reale, questo potrebbe portare a descrizioni errate, ordini sbagliati o confusione per l’utente finale.");
         setpopVisible(true);
-        setbugNoObject(true);
+
       }
     }
   }, [bugWrongProduct]);
