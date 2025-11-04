@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useCallback} from "react";
 import { useNavigate } from "react-router-dom";
 import { UserAuth } from "../context/AuthContext";
 import { FaUserCircle } from "react-icons/fa";
 import { addUser } from "./FirestoreFunction.js";
+import EndTimer from "./EndTimer.jsx";
 
 function TodoList() {
   const [todos, setTodos] = useState([]);
@@ -18,7 +19,37 @@ function TodoList() {
   const [showFaccine, setShowFaccine] = useState(false);
   const navigate = useNavigate();
   const { user } = UserAuth();
+  const DURATION = 20 * 60;
+    const [seconds, setseconds] = useState(() => {
+      const saved = sessionStorage.getItem("timer");
+      return saved ? Number(saved) : DURATION;
+    });
+    const [finishedTime, setFinishedTimer] = useState(false);
+useEffect(() => {
+    if (seconds <= 0) {
+      setFinishedTimer(true);
+      return;
+    }
 
+    const id = setInterval(() => {
+      setseconds((prev) => {
+        const next = prev - 1;
+        sessionStorage.setItem("timer", next);
+        return next;
+      });
+
+    }, 1000);
+    return () => clearInterval(id);
+  }, [seconds]);
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  const elapsed = DURATION - seconds;
+  const formatTime = useCallback(() => {
+    const minutes = Math.floor(elapsed / 60);
+    const Seconds = elapsed % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(Seconds).padStart(2, "0")}`;
+  }, [elapsed]);
 
   const CloseModal = () => {
     setshowModal(false);
@@ -95,10 +126,10 @@ function TodoList() {
   useEffect(() => {
     (async () => {
       if (user) {
-        await addUser("Todo", user.uid, { score, email: user.email });
+        await addUser("Todo", user.uid, { score, email: user.email,time:formatTime() });
       }
     })();
-  }, [score, user]);
+  }, [score, user,formatTime]);
 
   useEffect(() => {
     if (todos.length >= 7) {
@@ -124,6 +155,9 @@ function TodoList() {
             <span className="text-purple-800 font-semibold">
               Ciao, {user?.email?.split('@')[0] || 'utente'}
             </span>
+             <h2>
+              Timer: {minutes}:{remainingSeconds.toString().padStart(2, "0")}
+            </h2>
           </span>
 
           {/* Destra: chip punteggio + icona account */}
@@ -168,6 +202,7 @@ function TodoList() {
           </div>
         </div>
       )}
+      {finishedTime && (<EndTimer/>)}
 
       {/* Contenuto */}
       <div className="flex-grow">

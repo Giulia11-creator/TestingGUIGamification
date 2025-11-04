@@ -54,6 +54,7 @@ const Account = () => {
 
   // Recupero dei dati dal DB al caricamento della pagina
   useEffect(() => {
+    sessionStorage.clear();
     handleSearchUserScore("TextBox");
     handleSearchUserScore("Ecommerce");
     handleSearchUserScore("Todo");

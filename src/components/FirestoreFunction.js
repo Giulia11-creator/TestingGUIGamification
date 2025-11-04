@@ -26,6 +26,7 @@ export async function addUser(collectionName, uid, options = {}) {
         {
           percentage: Number(options.score ?? 0),
           lastUpdate: serverTimestamp(),
+          time: options.time ?? ""
         },
         { merge: true }
       );
@@ -35,6 +36,7 @@ export async function addUser(collectionName, uid, options = {}) {
         id: uid,
         nick: options.email ?? "",
         percentage: Number(options.score ?? 0),
+        time: options.time ?? "",
         createdAt: serverTimestamp(),
         lastUpdate: serverTimestamp(),
       });

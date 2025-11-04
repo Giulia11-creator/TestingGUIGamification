@@ -1,14 +1,20 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
 import { UserAuth } from "../context/AuthContext";
 import { FaUserCircle } from 'react-icons/fa';
 import { addUser } from "./FirestoreFunction.js";
-
+import EndTimer from "./EndTimer.jsx";
 const Ecommerce = () => {
   const navigate = useNavigate();
   const secondClickedDuringSleep = useRef(false);
   const isSleeping = useRef(false);
   const productToSave = useRef(null);
+  const DURATION = 20 * 60;
+  const [seconds, setseconds] = useState(() => {
+    const saved = sessionStorage.getItem("timer");
+    return saved ? Number(saved) : DURATION;
+  });
+  const [finishedTime, setFinishedTimer] = useState(false);
 
   let length = JSON.parse(sessionStorage.getItem("products") || "[]").length;
 
@@ -31,6 +37,32 @@ const Ecommerce = () => {
   });
 
   const { user } = UserAuth();
+
+  useEffect(() => {
+    if (seconds <= 0) {
+      setFinishedTimer(true);
+      return;
+    }
+
+    const id = setInterval(() => {
+      setseconds((prev) => {
+        const next = prev - 1;
+        sessionStorage.setItem("timer", next);
+        return next;
+      });
+
+    }, 1000);
+    return () => clearInterval(id);
+  }, [seconds]);
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  const elapsed = DURATION - seconds;
+  const formatTime = useCallback(() => {
+    const minutes = Math.floor(elapsed / 60);
+    const Seconds = elapsed % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(Seconds).padStart(2, "0")}`;
+  }, [elapsed]);
 
   useEffect(() => {
     const randomDelay = Math.floor(Math.random() * (10000 - 3000 + 1)) + 3000;
@@ -86,10 +118,10 @@ const Ecommerce = () => {
   useEffect(() => {
     (async () => {
       if (user) {
-        await addUser("Ecommerce", user.uid, { score, email: user.email });
+        await addUser("Ecommerce", user.uid, { score, email: user.email, time: formatTime() });
       }
     })();
-  }, [score, user]);
+  }, [score, user, formatTime, seconds]);
 
   const handleFirstClick = (titleP, priceP, photoP) => {
     isSleeping.current = true;
@@ -184,6 +216,9 @@ const Ecommerce = () => {
             <span className="text-purple-800 font-semibold">
               Ciao, {user?.email?.split('@')[0] || 'utente'}
             </span>
+            <h2>
+              Timer: {minutes}:{remainingSeconds.toString().padStart(2, "0")}
+            </h2>
           </span>
 
           {/* Destra: chip punteggio + icona account */}
@@ -548,6 +583,7 @@ const Ecommerce = () => {
               </div>
             </div>
           )}
+          {finishedTime && (<EndTimer />)}
         </div>
       </div>
     </section>

@@ -1,12 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from '../firebase';
 import { addUser } from "./FirestoreFunction.js";
 import { UserAuth } from "../context/AuthContext";
 import { FaUserCircle } from 'react-icons/fa';
-
+import EndTimer from "./EndTimer.jsx";
 const TestTextBox = () => {
+    const DURATION = 20 * 60;
+    const [seconds, setseconds] = useState(() => {
+        const saved = sessionStorage.getItem("timer");
+        return saved ? Number(saved) : DURATION;
+    });
+    const [finishedTime, setFinishedTimer] = useState(false);
     const [input, setInput] = useState('');
     const [risultato, setRisultato] = useState(null);
     const [errore, setErrore] = useState(false);
@@ -18,6 +24,32 @@ const TestTextBox = () => {
     const navigate = useNavigate();
     const { user } = UserAuth();
     const [score, setScore] = useState(0);
+
+    useEffect(() => {
+        if (seconds <= 0) {
+            setFinishedTimer(true);
+            return;
+        }
+
+        const id = setInterval(() => {
+            setseconds((prev) => {
+                const next = prev - 1;
+                sessionStorage.setItem("timer", next);
+                return next;
+            });
+
+        }, 1000);
+        return () => clearInterval(id);
+    }, [seconds]);
+
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    const elapsed = DURATION - seconds;
+    const formatTime = useCallback(() => {
+        const minutes = Math.floor(elapsed / 60);
+        const Seconds = elapsed % 60;
+        return `${String(minutes).padStart(2, "0")}:${String(Seconds).padStart(2, "0")}`;
+    }, [elapsed]);
 
 
     const calcola = (e) => {
@@ -68,10 +100,10 @@ const TestTextBox = () => {
     useEffect(() => {
         (async () => {
             if (user) {
-                await addUser("TextBox", user.uid, { score, email: user.email });
+                await addUser("TextBox", user.uid, { score, email: user.email, time: formatTime() });
             }
         })();
-    }, [score, user]);
+    }, [score, user, formatTime,seconds]);
 
     useEffect(() => {
         if (score === 100 && user) {
@@ -100,6 +132,9 @@ const TestTextBox = () => {
                         <span className="text-purple-800 font-semibold">
                             Ciao, {user?.email?.split('@')[0] || 'utente'}
                         </span>
+                        <h2>
+                            Timer: {minutes}:{remainingSeconds.toString().padStart(2, "0")}
+                        </h2>
                     </span>
 
                     {/* Destra: chip punteggio + icona account */}
@@ -229,6 +264,7 @@ const TestTextBox = () => {
                     </div>
                 </div>
             )}
+            {finishedTime && (<EndTimer />)}
         </div>
     );
 

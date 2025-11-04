@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
 import ProductCard from './ProductCard';
 import { addUser } from "./FirestoreFunction.js";
 import { UserAuth } from "../context/AuthContext";
+import EndTimer from "./EndTimer.jsx";
 
 // Util per i prezzi tipo "$1.699,00" -> 1699.00
 function parsePrice(str) {
@@ -15,6 +16,8 @@ function parsePrice(str) {
   return Number.isFinite(val) ? val : 0;
 }
 
+const DURATION = 20 * 60;
+
 const Cart = () => {
   const navigate = useNavigate();
   const { user } = UserAuth();
@@ -23,6 +26,13 @@ const Cart = () => {
   const storedProducts = sessionStorage.getItem("products");
   const products = storedProducts ? JSON.parse(storedProducts) : [];
   const length = Array.isArray(products) ? products.length : 0;
+
+  // ✅ hooks now inside the component
+  const [seconds, setseconds] = useState(() => {
+    const saved = sessionStorage.getItem("timer");
+    return saved ? Number(saved) : DURATION;
+  });
+  const [finishedTime, setFinishedTimer] = useState(false);
 
   const [bugFlaky, setbugFlaky] = useState(() => {
     const saved = sessionStorage.getItem('bugFlaky');
@@ -33,14 +43,41 @@ const Cart = () => {
     return saved ? JSON.parse(saved) : 0;
   });
 
+  useEffect(() => {
+    if (seconds <= 0) {
+      setFinishedTimer(true);
+      return;
+    }
+
+    const id = setInterval(() => {
+      setseconds((prev) => {
+        const next = prev - 1;
+        sessionStorage.setItem("timer", next);
+        return next;
+      });
+    }, 1000);
+
+    return () => clearInterval(id);
+  }, [seconds]);
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  const elapsed = DURATION - seconds;
+
+  const formatTime = useCallback(() => {
+    const m = Math.floor(elapsed / 60);
+    const s = elapsed % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }, [elapsed]);
+
   // Persist/aggiorna punteggio su Firestore
   useEffect(() => {
     (async () => {
       if (user) {
-        await addUser("Ecommerce", user.uid, { score, email: user.email });
+        await addUser("Ecommerce", user.uid, { score, email: user.email, time: formatTime() });
       }
     })();
-  }, [score, user]);
+  }, [score, user, formatTime]);
 
   // Incrementa score la prima volta che rileviamo bugFlaky
   useEffect(() => {
@@ -53,7 +90,7 @@ const Cart = () => {
         sessionStorage.setItem('scoreSetForbugFlaky', 'true');
       }
     }
-  }, [bugFlaky]);
+  }, [bugFlaky, score]);
 
   // Rileva il bug "flaky cart" quando il conteggio visuale > elementi effettivi
   useEffect(() => {
@@ -79,6 +116,9 @@ const Cart = () => {
             <span aria-label="bug-score" className="text-2xl">
               {'🪲'.repeat(Math.floor(score / 30))}
             </span>
+            <h2>
+              Timer: {minutes}:{remainingSeconds.toString().padStart(2, "0")}
+            </h2>
             <button
               onClick={() => navigate('/ecommerce')}
               className="h-10 px-4 rounded-lg bg-sky-500 text-white font-semibold hover:bg-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-300 transition"
@@ -195,6 +235,7 @@ const Cart = () => {
           </div>
 
         </div>
+        {finishedTime && (<EndTimer />)}
       </div>
     </section>
   );
