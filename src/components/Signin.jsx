@@ -6,20 +6,50 @@ const Signin = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [errorMsg, setErrorMsg] = useState("");
     const { login } = UserAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (password.length < 8) {
+            setErrorMsg("La password deve avere almeno 8 caratteri.");
+            return;
+        }
+
         try {
             await login(email, password);
-            navigate("/account");
+            navigate('/account');
         } catch (e) {
-            console.log(e.message);
+            // e.code: "auth/invalid-credential" (email inesistente o password errata)
+            if (e.code === "auth/invalid-credential") {
+                setErrorMsg("Email o password non corretti.");
+            } else if (e.code === "auth/too-many-requests") {
+                setErrorMsg("Troppi tentativi. Riprova più tardi.");
+            } else {
+                setErrorMsg("Errore durante il login: " + e.message);
+            }
+            console.log(e);
         }
     };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
+            {errorMsg && (
+                <p
+                    className="
+        absolute top-12 left-1/2 -translate-x-1/2
+        bg-red-100 text-red-700
+        border border-red-300
+        px-4 py-2 rounded-lg
+        text-center text-sm font-medium
+        shadow
+      "
+                    role="alert"
+                >
+                    {errorMsg}
+                </p>
+            )}
             {/* Card */}
             <div className="w-full max-w-md bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
                 {/* Header viola */}
