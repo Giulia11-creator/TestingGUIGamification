@@ -103,7 +103,7 @@ const TestTextBox = () => {
                 await addUser("TextBox", user.uid, { score, email: user.email, time: formatTime() });
             }
         })();
-    }, [score, user, formatTime,seconds]);
+    }, [score, user, formatTime, seconds]);
 
     useEffect(() => {
         if (score === 100 && user) {
@@ -129,12 +129,43 @@ const TestTextBox = () => {
                 <div className="max-w-[1200px] mx-auto px-5 py-3 flex items-center justify-between">
                     {/* Sinistra: saluto */}
                     <span className="text-lg md:text-xl text-slate-600">
-                        <span className="text-purple-800 font-semibold">
-                            Ciao, {user?.email?.split('@')[0] || 'utente'}
+
+                        <span className="text-lg md:text-xl text-slate-600">
+                            <span className="text-purple-800 font-semibold">
+                                Ciao, {user?.email?.split('@')[0] || 'utente'}
+                            </span>
+
+                            {/* ✅ TIMER BADGE */}
+                            <div
+                                className={[
+                                    "inline-flex items-center gap-2 px-3 py-1.5 rounded-full font-semibold shadow-sm",
+                                    "tabular-nums tracking-tight",
+                                    seconds <= 30
+                                        ? "bg-red-100 text-red-700 ring-1 ring-red-200"
+                                        : seconds <= 60
+                                            ? "bg-amber-100 text-amber-700 ring-1 ring-amber-200"
+                                            : "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
+                                    "ml-3 mt-1"   // ✅ aggiunto
+                                ].join(" ")}
+                                aria-live="polite"
+                                title="Tempo rimanente"
+                            >
+                                <span className="hidden sm:inline text-xs uppercase">Timer</span>
+                                <span className="font-mono text-base">
+                                    {minutes}:{remainingSeconds.toString().padStart(2, "0")}
+                                </span>
+
+                                <span
+                                    className={[
+                                        "ml-1 inline-block size-2 rounded-full",
+                                        seconds <= 30 ? "bg-red-500 animate-pulse" :
+                                            seconds <= 60 ? "bg-amber-500" : "bg-emerald-500",
+                                    ].join(" ")}
+                                    aria-hidden
+                                />
+                            </div>
                         </span>
-                        <h2>
-                            Timer: {minutes}:{remainingSeconds.toString().padStart(2, "0")}
-                        </h2>
+
                     </span>
 
                     {/* Destra: chip punteggio + icona account */}

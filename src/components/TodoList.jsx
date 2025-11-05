@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useCallback} from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserAuth } from "../context/AuthContext";
 import { FaUserCircle } from "react-icons/fa";
@@ -20,12 +20,12 @@ function TodoList() {
   const navigate = useNavigate();
   const { user } = UserAuth();
   const DURATION = 20 * 60;
-    const [seconds, setseconds] = useState(() => {
-      const saved = sessionStorage.getItem("timer");
-      return saved ? Number(saved) : DURATION;
-    });
-    const [finishedTime, setFinishedTimer] = useState(false);
-useEffect(() => {
+  const [seconds, setseconds] = useState(() => {
+    const saved = sessionStorage.getItem("timer");
+    return saved ? Number(saved) : DURATION;
+  });
+  const [finishedTime, setFinishedTimer] = useState(false);
+  useEffect(() => {
     if (seconds <= 0) {
       setFinishedTimer(true);
       return;
@@ -126,10 +126,10 @@ useEffect(() => {
   useEffect(() => {
     (async () => {
       if (user) {
-        await addUser("Todo", user.uid, { score, email: user.email,time:formatTime() });
+        await addUser("Todo", user.uid, { score, email: user.email, time: formatTime() });
       }
     })();
-  }, [score, user,formatTime]);
+  }, [score, user, formatTime]);
 
   useEffect(() => {
     if (todos.length >= 7) {
@@ -155,9 +155,35 @@ useEffect(() => {
             <span className="text-purple-800 font-semibold">
               Ciao, {user?.email?.split('@')[0] || 'utente'}
             </span>
-             <h2>
-              Timer: {minutes}:{remainingSeconds.toString().padStart(2, "0")}
-            </h2>
+            {/* ✅ TIMER BADGE */}
+            <div
+              className={[
+                "inline-flex items-center gap-2 px-3 py-1.5 rounded-full font-semibold shadow-sm",
+                "tabular-nums tracking-tight",
+                seconds <= 30
+                  ? "bg-red-100 text-red-700 ring-1 ring-red-200"
+                  : seconds <= 60
+                    ? "bg-amber-100 text-amber-700 ring-1 ring-amber-200"
+                    : "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
+                "ml-3 mt-1"   // ✅ aggiunto
+              ].join(" ")}
+              aria-live="polite"
+              title="Tempo rimanente"
+            >
+              <span className="hidden sm:inline text-xs uppercase">Timer</span>
+              <span className="font-mono text-base">
+                {minutes}:{remainingSeconds.toString().padStart(2, "0")}
+              </span>
+
+              <span
+                className={[
+                  "ml-1 inline-block size-2 rounded-full",
+                  seconds <= 30 ? "bg-red-500 animate-pulse" :
+                    seconds <= 60 ? "bg-amber-500" : "bg-emerald-500",
+                ].join(" ")}
+                aria-hidden
+              />
+            </div>
           </span>
 
           {/* Destra: chip punteggio + icona account */}
@@ -202,7 +228,7 @@ useEffect(() => {
           </div>
         </div>
       )}
-      {finishedTime && (<EndTimer/>)}
+      {finishedTime && (<EndTimer />)}
 
       {/* Contenuto */}
       <div className="flex-grow">
